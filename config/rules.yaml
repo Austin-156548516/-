@@ -1,0 +1,338 @@
+# 结构评审规则配置文件
+# Structure Review Rules Configuration
+# Version: 1.0
+# 
+# 本配置文件定义了所有的结构评审规则，可根据不同的产品场景灵活调整
+# This configuration file defines all structure review rules and can be customized
+# for different product scenarios.
+
+metadata:
+  version: 1.0
+  description: "智能监控器结构评审规则集 - Smart Monitor Structure Review Rules"
+  last_updated: "2024-01-15"
+  target_devices:
+    - smart_camera          # 智能摄像头
+    - sensor_hub            # 传感器集线器
+    - edge_device           # 边缘计算设备
+    - industrial_monitor    # 工业监测设备
+
+# 规则启用/禁用开关
+rules:
+  
+  # 1. 间隙检查 (Clearance Check)
+  # 验证组件间的安装间距是否满足要求
+  clearance:
+    enabled: true
+    description: "检查组件间间隙是否满足最小要求"
+    severity: high
+    
+    # 全局最小间隙要求 (单位: mm)
+    min_gap_mm: 2.0
+    
+    # 关键区域的特殊间隙要求
+    critical_gaps:
+      # 镜头安装区域
+      lens_mount:
+        min_gap: 1.5
+        description: "镜头与防护罩间距"
+        severity: critical
+      
+      # 连接器区域
+      connector_area:
+        min_gap: 3.0
+        description: "连接器与壳体间距"
+        severity: high
+      
+      # 传感器区域
+      sensor_mounting:
+        min_gap: 2.5
+        description: "传感器与挡板间距"
+        severity: high
+      
+      # 散热片区域
+      heatsink_area:
+        min_gap: 2.0
+        description: "散热片与外壳间距"
+        severity: medium
+    
+    # 检查选项
+    check_all_pairs: true
+    report_closest_gaps: true
+    closest_gap_count: 5
+  
+  # 2. 碰撞检测 (Collision Detection)
+  # 检查零件间是否存在碰撞或重叠
+  collision:
+    enabled: true
+    description: "检测零件间碰撞和干涉"
+    severity: high
+    
+    # 碰撞检查类型
+    check_types:
+      static_collision: true        # 静态碰撞检查
+      assembly_sequence: true        # 装配顺序检查
+      moving_parts_interference: true # 运动部件干涉
+      
+    # 移动部件定义 (例如: 云台旋转、对焦马达)
+    moving_parts:
+      - name: "focus_motor"
+        range_mm: 5
+        description: "对焦马达运动范围"
+      - name: "pan_tilt_mechanism"
+        range_deg: 180
+        description: "云台旋转范围"
+    
+    # 装配冲突规则
+    assembly_rules:
+      check_mounting_order: true
+      detect_over_tightening_risk: true
+  
+  # 3. 热管理评审 (Thermal Management Review)
+  # 评估散热设计的合理性
+  thermal:
+    enabled: true
+    description: "评审热管理和散热设计"
+    severity: medium
+    
+    # 热上升限制 (单位: °C)
+    max_hotspot_temp_rise: 30
+    
+    # 关键热点定义
+    critical_hotspots:
+      - component: "image_sensor"
+        max_rise: 15
+        description: "图像传感器温升限制"
+      
+      - component: "lens_driver"
+        max_rise: 25
+        description: "镜头驱动芯片温升限制"
+      
+      - component: "power_supply"
+        max_rise: 20
+        description: "电源模块温升限制"
+    
+    # 散热通道检查
+    heatsink_checks:
+      min_contact_area: 100          # 最小接触面积 (mm²)
+      check_thermal_resistance: true  # 检查热阻
+      check_airflow_paths: true       # 检查气流路径
+    
+    # 防结露检查
+    condensation_check:
+      enabled: true
+      min_temperature_margin: 5      # 最小温度裕度 (°C)
+  
+  # 4. 布局合理性评审 (Layout Review)
+  # 检查结构布局是否合理、是否影响维护和功能
+  layout:
+    enabled: true
+    description: "评审结构布局的合理性"
+    severity: medium
+    
+    # 布局规则
+    layout_rules:
+      sensor_mounting_stability:
+        enabled: true
+        severity: critical
+        description: "传感器安装稳定性"
+      
+      cable_routing_clearance:
+        enabled: true
+        severity: major
+        description: "信号线缆路由间隙"
+        min_radius: 5  # mm, 最小弯曲半径
+      
+      pcb_orientation_check:
+        enabled: true
+        severity: major
+        description: "PCB 板方向合理性"
+      
+      serviceability:
+        enabled: true
+        severity: medium
+        description: "设备可维护性"
+        required_access_area: 100  # mm²
+      
+      connector_accessibility:
+        enabled: true
+        severity: high
+        description: "连接器可接近性"
+      
+      screw_torque_access:
+        enabled: true
+        severity: medium
+        description: "螺钉扭矩操作空间"
+    
+    # 安装方向要求
+    mounting_orientation:
+      preferred_direction: "top"
+      acceptable_angles: [0, 90]  # 度数
+  
+  # 5. 监控器专用检查 (Monitoring Device Specific)
+  # 针对智能监控器的特殊设计检查
+  monitoring_device:
+    enabled: true
+    description: "智能监控器专用的结构检查"
+    severity: high
+    
+    # 摄像头特殊检查
+    camera_specific:
+      lens_protection_clearance:
+        enabled: true
+        min_clearance: 5.0  # mm
+        description: "镜头保护间距"
+      
+      focus_motor_space:
+        enabled: true
+        required_space: 10  # mm
+        description: "对焦马达操作空间"
+      
+      sensor_calibration_access:
+        enabled: true
+        description: "传感器校准接头可达性"
+      
+      anti_vibration_mounting:
+        enabled: true
+        description: "减震支架检查"
+    
+    # 传感器特殊检查
+    sensor_specific:
+      sensing_element_exposure:
+        enabled: true
+        required_condition: "unobstructed"
+        description: "感知元件无遮挡"
+      
+      protection_rating_compliance:
+        enabled: true
+        required_rating: "IP67"
+        description: "防护等级合规性"
+      
+      environmental_resistance:
+        enabled: true
+        description: "环境适应性检查"
+      
+      calibration_certification:
+        enabled: true
+        description: "校准认证位置"
+    
+    # 系统集成检查
+    system_integration:
+      multi_sensor_interference:
+        enabled: true
+        description: "多传感器干涉检查"
+      
+      power_distribution:
+        enabled: true
+        description: "电源分配合理性"
+      
+      signal_integrity:
+        enabled: true
+        description: "信号完整性基础检查"
+  
+  # 6. 制造可行性检查 (Manufacturing Feasibility)
+  # 评估设计是否易于制造
+  manufacturing:
+    enabled: true
+    description: "制造可行性评审"
+    severity: medium
+    
+    molding_checks:
+      min_wall_thickness: 1.5  # mm
+      max_wall_thickness: 5.0  # mm
+      draft_angle_requirement: 1.0  # 度
+    
+    assembly_checks:
+      max_assembly_steps: 20
+      critical_assembly_points: []
+      tool_accessibility: true
+    
+    material_flow:
+      check_undercuts: true
+      check_thin_sections: true
+
+# 告警规则 (Warning Rules)
+warnings:
+  
+  high_risk_zones:
+    - vibration_prone_areas      # 易振动区域
+    - thermal_stress_points       # 热应力点
+    - moisture_ingress_paths      # 潮气侵入路径
+    - uv_exposure_areas          # 紫外线暴露区域
+  
+  alert_thresholds:
+    critical_failures_count: 3    # 严重缺陷数量阈值
+    major_warnings_count: 5       # 主要警告数量阈值
+    pass_rate_min: 0.8            # 通过率最小值 (0-1)
+    score_min: 7.0                # 综合评分最小值 (0-10)
+
+# 报告配置 (Reporting Configuration)
+reporting:
+  output_formats:
+    - json      # JSON 格式 (机器可读)
+    - html      # HTML 格式 (人工审阅)
+    - csv       # CSV 格式 (数据分析)
+  
+  detail_level: detailed  # brief, standard, detailed
+  include_recommendations: true
+  include_statistics: true
+  include_risk_assessment: true
+  
+  # 报告部分
+  sections:
+    summary: true
+    detailed_results: true
+    risk_assessment: true
+    recommendations: true
+    statistics: true
+    reference_images: true  # 如果可用
+  
+  # 签名和认可
+  signature:
+    enabled: false
+    reviewer_name: ""
+    reviewer_title: ""
+    date_format: "YYYY-MM-DD"
+
+# 监控指标导出 (Metrics Export)
+monitoring:
+  enabled: true
+  prometheus_export: true
+  
+  metrics:
+    - name: "structure_review_total_checks"
+      type: "gauge"
+      description: "总检查项数"
+    
+    - name: "structure_review_pass_count"
+      type: "gauge"
+      description: "通过项数"
+    
+    - name: "structure_review_pass_rate"
+      type: "gauge"
+      description: "通过率"
+    
+    - name: "structure_review_score"
+      type: "gauge"
+      description: "综合评分"
+    
+    - name: "structure_review_risk_level"
+      type: "gauge"
+      description: "风险等级 (0=low, 1=medium, 2=high)"
+
+# 高级选项 (Advanced Options)
+advanced:
+  parallel_processing: false
+  cache_geometry_data: true
+  timeout_seconds: 300
+  memory_limit_mb: 2048
+  
+  # 调试选项
+  debug:
+    enabled: false
+    save_intermediate_results: false
+    verbose_logging: false
+    export_geometry_visualization: false
+
+# 版本历史 (Version History)
+# v1.0 (2024-01-15): 初始版本，包含基础评审规则
+# v0.9 (2024-01-10): 测试版本
